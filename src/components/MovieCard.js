@@ -3,8 +3,8 @@ import {Text, View, TouchableOpacity, StyleSheet, Image} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {COLOR_CODES} from '../utility/Theme';
 
-const MovieCard = ({item}) => {
-  console.log(item)
+const MovieCard = ({item, showWishlist, onPressWishList, onPressRemoveWishlist}) => {
+  console.log(item);
   return (
     <View style={styles.movieItem}>
       <Image
@@ -12,12 +12,33 @@ const MovieCard = ({item}) => {
         style={styles.thumbnail}
         source={{uri: item.Poster}}
       />
-      <Text style={styles.movieDesc}>{item.Title}</Text>
+      <Text style={styles.movieDesc} numberOfLines={1}>
+        {item.Title}
+      </Text>
       <Text style={styles.movieDesc}>{`Year - ${item.Year}`}</Text>
-      <TouchableOpacity style={styles.buttonContainer}>
-        <Text style={styles.buttonText}>Shortlist</Text>
-        <Ionicons name="heart-outline" style={styles.heartIcon} size={15} />
-      </TouchableOpacity>
+      {showWishlist ? (
+        <TouchableOpacity
+          onPress={onPressRemoveWishlist}
+          style={styles.buttonContainer}>
+          <Text style={styles.buttonText}>Remove</Text>
+          <Ionicons name="heart-outline" style={styles.heartIcon} size={15} />
+        </TouchableOpacity>
+      ) : (
+        <TouchableOpacity
+          disabled={item.isWishlist}
+          onPress={onPressWishList}
+          style={[
+            styles.buttonContainer,
+            {
+              backgroundColor: item.isWishlist
+                ? COLOR_CODES.LIGHT_PRIMARY
+                : COLOR_CODES.PRIMARY,
+            },
+          ]}>
+          <Text style={styles.buttonText}>Shortlist</Text>
+          <Ionicons name="heart-outline" style={styles.heartIcon} size={15} />
+        </TouchableOpacity>
+      )}
     </View>
   );
 };
@@ -41,6 +62,7 @@ const styles = StyleSheet.create({
   thumbnail: {
     width: 150,
     height: 150,
+    marginBottom: 5,
     borderTopLeftRadius: 4,
     borderTopRightRadius: 4,
   },
@@ -48,12 +70,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: COLOR_CODES.PRIMARY,
     fontSize: 15,
+    paddingHorizontal: 4,
     backgroundColor: COLOR_CODES.WHITE,
   },
   buttonContainer: {
     paddingVertical: 4,
     paddingHorizontal: 14,
-    marginVertical: 4,
+    marginVertical: 12,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',

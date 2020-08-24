@@ -1,6 +1,8 @@
 import * as React from 'react';
-import {Text, View, StyleSheet, Image, FlatList} from 'react-native';
+import {Text, View, StyleSheet, Image, FlatList, ToastAndroid, ActivityIndicator} from 'react-native';
 import _ from 'lodash';
+import {inject, observer} from 'mobx-react';
+
 
 import Search from '../components/SearchBar';
 import MovieCard from '../components/MovieCard';
@@ -8,6 +10,8 @@ import {COLOR_CODES} from '../utility/Theme';
 
 const emptyResultsImage = require('../assets/images/magnifying_glass.png');
 
+@inject('wishlist')
+@observer
 export default class MoviesScreen extends React.Component {
   constructor(props) {
     super(props);
@@ -15,10 +19,11 @@ export default class MoviesScreen extends React.Component {
       moviesList: [],
       isLoading: false,
     };
-    this.getMoviesList = _.debounce(this.getMoviesOnChangeText, 2000);
+    this.getMoviesList = _.debounce(this.getMoviesOnChangeText, 100);
   }
 
   getMoviesOnChangeText = async (val) => {
+    console.log(val)
     if (val?.trim()) {
       const url = `http://www.omdbapi.com/?type=movie&apikey=a1b5f9ec&s=${val}`;
       this.setState({
@@ -27,9 +32,13 @@ export default class MoviesScreen extends React.Component {
       const result = await fetch(url);
       const stringJson = await result.text();
       const json = JSON.parse(stringJson);
+      const withWishlistList = json.Search?.map((item) => ({
+        ...item,
+        isWishlist: false,
+      }));
       console.log(json);
       this.setState({
-        moviesList: json.Search?.length ? json.Search : [],
+        moviesList: withWishlistList.length ? withWishlistList : [],
         isLoading: false,
       });
     } else {
@@ -40,6 +49,9 @@ export default class MoviesScreen extends React.Component {
   };
 
   renderEmpty = () => {
+    if(this.state.isLoading) {
+      return <ActivityIndicator size="large" color={COLOR_CODES.PRIMARY} />
+    }
     return (
       <View style={styles.mainView}>
         <Image source={emptyResultsImage} />
@@ -48,8 +60,16 @@ export default class MoviesScreen extends React.Component {
     );
   };
 
+  addToWishList = (index) => {
+    const data = this.state.moviesList;
+    data[index].isWishlist = true;
+    this.props.wishlist.updateWishlist(data[index]);
+    ToastAndroid.show("Added To Wishlist!", ToastAndroid.SHORT, ToastAndroid.BOTTOM,25,50);
+    this.setState({moviesList: data});
+  };
+
   render() {
-    const {moviesList} = this.state;
+    const {moviesList, isLoading} = this.state;
 
     return (
       <View style={styles.container}>
@@ -57,9 +77,16 @@ export default class MoviesScreen extends React.Component {
         <View style={{marginTop: 100}}>
           <FlatList
             data={moviesList}
+            extraData={moviesList}
             ListEmptyComponent={this.renderEmpty}
-            renderItem={({item, index}) => <MovieCard item={item} />}
+            renderItem={({item, index}) => (
+              <MovieCard
+                item={item}
+                onPressWishList={() => this.addToWishList(index)}
+              />
+            )}
             numColumns={2}
+            keyboardShouldPersistTaps={'handled'}
             keyExtractor={(item, index) => index.toString()}
           />
         </View>
@@ -83,7 +110,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   text: {
-    fontSize: 12,
+    fontSize: 14,
     marginTop: 18,
     textAlign: 'center',
     marginHorizontal: 20,
