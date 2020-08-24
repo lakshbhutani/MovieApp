@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Text, View, StyleSheet, Image, FlatList, ToastAndroid, ActivityIndicator} from 'react-native';
+import {Text, View, StyleSheet, Image, FlatList, ToastAndroid, ActivityIndicator, Modal, Dimensions, TouchableOpacity} from 'react-native';
 import _ from 'lodash';
 import {inject, observer} from 'mobx-react';
 
@@ -18,6 +18,7 @@ export default class MoviesScreen extends React.Component {
     this.state = {
       moviesList: [],
       isLoading: false,
+      isWarningPopup: true
     };
     this.getMoviesList = _.debounce(this.getMoviesOnChangeText, 100);
   }
@@ -38,7 +39,7 @@ export default class MoviesScreen extends React.Component {
       }));
       console.log(json);
       this.setState({
-        moviesList: withWishlistList.length ? withWishlistList : [],
+        moviesList: withWishlistList?.length ? withWishlistList : [],
         isLoading: false,
       });
     } else {
@@ -89,6 +90,25 @@ export default class MoviesScreen extends React.Component {
             keyboardShouldPersistTaps={'handled'}
             keyExtractor={(item, index) => index.toString()}
           />
+           <Modal 
+            animationType="slide" 
+            visible={this.state.isWarningPopup} 
+            transparent 
+            onRequestClose={() => this.setState({ isWarningPopup: false })}
+          >
+            <View style={styles.mainContainerInfo}>
+              <View style={styles.containerInfo}>
+                <Text style={styles.infoHeading}>Info!!</Text>
+                <Text style={styles.infoText}>1) Please enter something in search query to search for your favourite movies.</Text>
+                <Text style={styles.infoText}>2) You can also shortlist the movies of your choice.</Text>
+                <Text style={styles.infoText}>3) You can view the total number of items shortlisted in bottom tab bar.</Text>
+                <Text style={[styles.infoText, { color: 'black', marginTop: 10, opacity: 0.7}]}>**Test data - Captain america, conjuring, Deadpool, Avengers....</Text>
+                <TouchableOpacity onPress={()=> this.setState({ isWarningPopup: false }) } style={styles.buttonContainer}>
+                  <Text style={styles.buttonText}>Continue</Text>
+                </TouchableOpacity> 
+              </View>
+          </View>
+        </Modal>
         </View>
       </View>
     );
@@ -126,4 +146,49 @@ const styles = StyleSheet.create({
     marginLeft: 5,
     color: COLOR_CODES.WHITE,
   },
+  mainContainerInfo: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#00000040',
+  },
+  containerInfo: {
+    paddingVertical: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: Dimensions.get('window').width - 100,
+    // marginTop: isIphoneXorAbove() ? 70 : 40,
+    paddingHorizontal: 20,
+    // marginBottom: isIphoneXorAbove() ? 110 : 65,
+    backgroundColor: 'white',
+    borderRadius: 4,
+  },
+  infoHeading: {
+    color: COLOR_CODES.PRIMARY,
+    fontSize: 18,
+    fontWeight: '500',
+    marginBottom: 10,
+    // borderBottomWidth: 1
+  },
+  infoText: {
+    fontSize: 14,
+    opacity: 0.8,
+    color: COLOR_CODES.GRAY
+  },
+  buttonContainer: {
+    paddingVertical: 4,
+    paddingHorizontal: 14,
+    marginTop: 20,
+    marginBottom: 10,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 30,
+    backgroundColor: COLOR_CODES.PRIMARY,
+  },
+  buttonText: {
+    color: COLOR_CODES.WHITE,
+    fontSize: 16,
+    paddingHorizontal: 12
+  }
 });
