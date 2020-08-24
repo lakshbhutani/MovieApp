@@ -18,9 +18,15 @@ export default class MoviesScreen extends React.Component {
     this.state = {
       moviesList: [],
       isLoading: false,
-      isWarningPopup: true
+      isWarningPopup: false
     };
-    this.getMoviesList = _.debounce(this.getMoviesOnChangeText, 100);
+    this.getMoviesList = _.debounce(this.getMoviesOnChangeText, 1000);
+  }
+
+  componentDidMount () {
+    setTimeout(() => {
+      this.setState({ isWarningPopup : true })
+    }, 200)
   }
 
   getMoviesOnChangeText = async (val) => {
