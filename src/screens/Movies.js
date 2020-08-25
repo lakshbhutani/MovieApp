@@ -8,6 +8,18 @@ import Search from '../components/SearchBar';
 import MovieCard from '../components/MovieCard';
 import {COLOR_CODES} from '../utility/Theme';
 
+const guideData = [
+  {
+    text: 'Please enter something in search query to search for your favourite movies.'
+  },
+  {
+    text: 'You can also shortlist the movies of your choice.'
+  },
+  {
+    text: 'You can view the total number of items shortlisted in bottom tab bar.'
+  }
+];
+
 const emptyResultsImage = require('../assets/images/magnifying_glass.png');
 
 @inject('wishlist')
@@ -105,10 +117,15 @@ export default class MoviesScreen extends React.Component {
             <View style={styles.mainContainerInfo}>
               <View style={styles.containerInfo}>
                 <Text style={styles.infoHeading}>Info!!</Text>
-                <Text style={styles.infoText}>1) Please enter something in search query to search for your favourite movies.</Text>
-                <Text style={styles.infoText}>2) You can also shortlist the movies of your choice.</Text>
-                <Text style={styles.infoText}>3) You can view the total number of items shortlisted in bottom tab bar.</Text>
-                <Text style={[styles.infoText, { color: 'black', marginTop: 10, opacity: 0.7}]}>**Test data - Captain america, conjuring, Deadpool, Avengers....</Text>
+                <FlatList
+                  data={guideData}
+                  renderItem={({item, index}) => (
+                    <Text style={styles.infoText}>{index+1}) {item.text}</Text>
+                  )}
+                  keyboardShouldPersistTaps={'handled'}
+                  keyExtractor={(item, index) => index.toString()}
+                />
+                <Text style={[styles.infoText, { color: 'black', marginTop: 10, opacity: 0.7}]}>**Test data - Captain america, conjuring, Deadpool, Avengers.....</Text>
                 <TouchableOpacity onPress={()=> this.setState({ isWarningPopup: false }) } style={styles.buttonContainer}>
                   <Text style={styles.buttonText}>Continue</Text>
                 </TouchableOpacity> 
